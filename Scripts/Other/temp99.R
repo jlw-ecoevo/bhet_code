@@ -18,12 +18,12 @@ merge.easy <- function(df1,df2,key){
 
 # Load Data --------------------------------------------------------------------
 
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 asv <- read.delim("221118-1030_P16N-S_3.84-fold-18S-correction_merged_16S_18S_proportions.QCd.prok-nonphoautototrophic.tsv")
 meta <- read.csv("2.20221118_P16NS_Sample_Metadata_Final.csv") %>%
   mutate(SID = gsub(pattern="-",replace=".",Corrected_DNA_ID))
 asv_genome <- 
-  read.delim("221201_P16N-S.prok-nonphoautototrophic.BLAST-95pcID-vs-GTDB-r207-allproks.tsv",
+  read.delim("gtdb220/240705_P16N-S.prok-nonphoautototrophic.BLAST-95pcID-vs-GTDB-r220-allssu.tsv",
              header=F) %>%
   group_by(V1) %>%
   subset(select = c(V1,V2)) %>%
@@ -32,16 +32,17 @@ names(asv_genome) <- c("ASV","Accession")
 
 asv <- asv %>% subset(OTU_ID %in% asv_genome$ASV)
 
+
 # Estimate OGT w/ q99 Method ---------------------------------------------------
 
 temp_df <- data.frame(ASV=character(),
                       OGT99=numeric())
 for(i in 1:nrow(asv)){
-  q99 <- quantile(asv[i,-c(1:2)],0.99)[1,1]
+  q99 <- quantile(unlist(asv[i,-c(1:2)]),0.99)[1]
   s99 <- setdiff(names(asv[,asv[i,]>q99]),c("OTU_ID","taxonomy"))
   t99 <- meta$Temperature[meta$SID %in% s99]
   
-  q95 <- quantile(asv[i,-c(1:2)],0.95)[1,1]
+  q95 <- quantile(unlist(asv[i,-c(1:2)]),0.95)[1]
   s95 <- setdiff(names(asv[,asv[i,]>q95]),c("OTU_ID","taxonomy"))
   t95 <- meta$Temperature[meta$SID %in% s95]
   

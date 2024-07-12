@@ -43,8 +43,13 @@ predictGenome <- function(i,metadata){
                             temperature = metadata$OGT95[i],
                             mode="full",
                             training_set="madin"))
+  growth20C <- try(predictGrowth(genes,
+                                highly_expressed,
+                                temperature = 20,
+                                mode="full",
+                                training_set="madin"))
   
-  if((!inherits(growth99,"try-error")) & (!inherits(growth95,"try-error"))){
+  if((!inherits(growth99,"try-error")) & (!inherits(growth95,"try-error")) & (!inherits(growth20C,"try-error"))){
     return(data.frame(Genome = genome,
                       ASV = metadata$ASV[i],
                       OGT99 = growth99$OGT,
@@ -54,6 +59,7 @@ predictGenome <- function(i,metadata){
                       dCUB = (growth99$CUB-growth99$CUBHE)/growth99$CUB,
                       d99 = growth99$d,
                       d95 = growth95$d,
+                      d20C = growth20C$d,
                       nHE = growth99$nHE,
                       nGenes = length(genes),
                       stringsAsFactors = F))
@@ -67,6 +73,7 @@ predictGenome <- function(i,metadata){
                       dCUB = NA,
                       d99 = NA,
                       d95 = NA,
+                      d20C =NA,
                       nHE = NA,
                       nGenes = length(genes),
                       stringsAsFactors = F))
@@ -75,8 +82,8 @@ predictGenome <- function(i,metadata){
 
 
 # Load Data --------------------------------------------------------------------
-
-setwd("~/gtdb207_genomes/")
+  
+setwd("/project/jakeweis_896/gtdb220/gtdb_genomes_reps_r220/")
 load("asv_OGT99.rda") # OGT metadata, precalculated in temp99.R
 paths <- readLines("ffn.files") # Should hold the filepaths of the genomes you want to run prediction on
 
@@ -94,8 +101,8 @@ print(head(asv_df))
 pred_list <- mclapply(1:nrow(asv_df),
                     predictGenome,
                     metadata = asv_df,
-                    mc.cores = 50)
+                    mc.cores = 63)
 
 pred_df <- do.call("rbind",pred_list)
 
-save(pred_df,file="gtdb_genome_predictions.rda")
+save(pred_df,file="gtdb220_genome_predictions.rda")
