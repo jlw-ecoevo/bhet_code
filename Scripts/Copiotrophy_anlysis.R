@@ -26,7 +26,7 @@ merge.easy <- function(df1,df2,key){
 # Load Datasets ----------------------------------------------------------------
 
 #ASV Transect abunmdance data
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 asv <- read.delim("221118-1030_P16N-S_3.84-fold-18S-correction_merged_16S_18S_proportions.QCd.prok-nonphoautototrophic.tsv")
 #Make relative abundance
 asv[,3:197] <- t(t(asv[,-c(1:2)])/colSums(asv[,-c(1:2)]))
@@ -53,13 +53,13 @@ genome_maxab <- data.frame(Genome=genome_ab$Accession,
                             MaxRelAb=rowMaxs(as.matrix(genome_ab[,-1])))
 
 #Taxonomic clusters based on expert annotation
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 tax_bins <- read.delim("ASVs_aggname_toJL_Feb2023.csv",sep=",") %>%
   subset(select=-c(X,taxonomy))
 names(tax_bins)[1] <- "ASV"
 
 #METABOLIC output for genomes
-setwd("~/bhet_code/Data/METABOLIC_result_each_spreadsheet/")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data/METABOLIC_result_each_spreadsheet/")
 x1 <- read.table("METABOLIC_result_worksheet5_batch1.tsv",sep="\t",head=T)
 x2 <- read.table("METABOLIC_result_worksheet5_batch2.tsv",sep="\t",head=T)
 x <- merge.easy(x1,x2,key="CAZyme.ID")
@@ -67,11 +67,11 @@ xm <- x %>% subset(select=names(x)[grep("Hit.numbers",names(x))])
 rownames(xm) <- x$CAZyme.ID
 
 #Save CAZy data organized
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 write.csv(xm,file="CAZy_METABOLIC_BestHitGenomes.csv")
 
 #CUB/growth data
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 load("gtdb_genome_predictions.rda")
 
 asv_genome <- pred_df %>%
@@ -101,7 +101,7 @@ gdf_cazy <- data.frame(Genome = names(xm) %>%
                          colSums)
 
 #Put it together for plotting
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 asv_cazy <- merge.easy(pred_df,gdf_cazy,key="Genome") %>%
   # subset(nHE>=10) %>%
   group_by(ASV) %>%
@@ -137,7 +137,7 @@ plot_df <- plot_df %>% subset(!Jesse_aggname %in%c("Nitroso","Nitrosp"))
 
 ### Metabolism Summary per guild -----------------------------------------------
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("guild_metabolism.pdf",width=14,height=12)
 ggplot(plot_df,
        aes(x=All1,y=dCUBp,size=MaxRelAb)) +
@@ -160,7 +160,7 @@ ggplot(plot_df,
   facet_wrap(~Jesse_aggname) 
 dev.off()
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("guild_metabolism_all.pdf",width=14,height=12)
 ggplot(plot_df,
        aes(x=All1,y=dCUBp,size=MaxRelAb,fill=Jesse_aggname)) +
@@ -276,7 +276,7 @@ pCu <- ggplot(data.frame(x=10^mC$data,
 pCu
 
 #Plot: Arrange IoC plots
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_classification_uncertainty.pdf",width=10,height=15)
 ggarrange(pC,pCu,pCg,nrow=3,labels=c("(a)","(b)","(c)"))
 dev.off()
@@ -305,13 +305,13 @@ pCr <- ggplot(plot_df,
   geom_vline(xintercept=c_l,lty=2)
 pCr
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_ridges.pdf",width=10,height=10)
 pCr
 dev.off()
 
 #Plot: Arrange clustering with ridges
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_ridges_plusdist.pdf",width=10,height=12)
 ggarrange(pC + theme(legend.position=c(0.2,0.8)),
           pCr + theme(legend.position = c(-0.3,0.9)),
@@ -320,16 +320,23 @@ dev.off()
 
 
 #Write output ASV and IoC data, along with IoC inputs
-CI <- plot_df %>% subset(select=c(Genome,PC1t,dCUB,nGenes,All))
+CI <- plot_df %>% subset(select=c(Genome,PC1t,dCUB,nGenes,All,Jesse_aggname))
 names(CI)[5] <- "nCAZy"
 names(asvg) <- c("ASV","Genome")
 asv_CI <- merge.easy(asvg,CI,key="Genome") %>%
   subset(!is.na(PC1t)) %>%
-  subset(select=c(ASV,PC1t,dCUB,nGenes,nCAZy))
+  subset(select=c(ASV,PC1t,dCUB,nGenes,nCAZy,Jesse_aggname))
 names(asv_CI)[2] <- "CopiotrophyIndex"
-setwd("~/bhet_code/Data")
+setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 write.table(asv_CI,file="Copiotrophy_index.tsv")
 write.csv(asv_CI,file="Copiotrophy_index.csv")
+write.csv(plot_df,file="Copiotrophy_index_pergenome.csv")
+
+asv_CI %>% 
+  subset(select=c(Genome,Jesse_aggname,CopiotrophyIndex)) %>%
+  unique() %>%
+  group_by(Jesse_aggname) %>% 
+  summarise(IoC=median(CopiotrophyIndex))
 
 ### IoC Components -------------------------------------------------------------
 
@@ -345,24 +352,24 @@ ggpairs(cor_df) + theme_pubclean()
 plot_ls <- ggpairs(cor_df) + theme_pubclean()
 
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_dist.pdf",width=20,height=10,onefile=FALSE)
 wrap_elements(ggmatrix_gtable(plot_ls)) + 
   wrap_elements( ggarrange(pC,pCg,nrow=2)) + 
   plot_annotation(tag_levels = 'a')
 dev.off()
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_dist_a.pdf",width=10,height=10,onefile=FALSE)
 wrap_elements(ggmatrix_gtable(plot_ls))
 dev.off()
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_dist_b.pdf",width=10,height=5,onefile=FALSE)
 pC
 dev.off()
 
-setwd("~/bhet_code/Figures")
+setwd("C:/Users/jlwei/Documents/bhet_code/Figures")
 pdf("Copiotrophy_dist_c.pdf",width=10,height=5,onefile=FALSE)
 pCg
 dev.off()

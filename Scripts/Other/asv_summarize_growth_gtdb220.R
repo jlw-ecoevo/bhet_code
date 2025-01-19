@@ -23,7 +23,7 @@ setwd("C:/Users/jlwei/Documents/bhet_code/Data")
 load("gtdb220_genome_predictions_20C.rda")
 names(pred_df)[1] <- "Accession"
 pred_df <- pred_df %>%
-  mutate(d20C=d) %>%
+  mutate(d20C=as.numeric(d)) %>%
   subset(d20C<1e3) %>%
   subset(select=c(Accession,
                   CUBHE,
@@ -35,7 +35,7 @@ pred_df <- pred_df %>%
                   nGenes,
                   d20C))
 load("gRodon_sysdata.rda")
-pred_mod <- gRodon_model_temp_madin
+pred_mod <- gRodon_model_meta_temp_madin
 
 load("asv_OGT99_I8-I9.rda")
 I8I9_df <- merge.easy(asv_df,pred_df,key="Accession") %>%
@@ -51,6 +51,35 @@ P16_df <- merge.easy(asv_df,pred_df,key="Accession") %>%
   mutate(OGT=OGT99)
 
 # temperature corrected growth -------------------------------------------------
+
+I8I9_df <- I8I9_df %>%
+  mutate(CUBHE=as.numeric(CUBHE),
+         dCUB=as.numeric(dCUB),
+         CPB=as.numeric(CPB),
+         ConsistencyHE=as.numeric(ConsistencyHE),
+         nHE=as.numeric(nHE),
+         nGenes=as.numeric(nGenes),
+         d20C=as.numeric(d20C),
+         OGT=as.numeric(OGT))
+GA02_df <- GA02_df %>%
+  mutate(CUBHE=as.numeric(CUBHE),
+         dCUB=as.numeric(dCUB),
+         CPB=as.numeric(CPB),
+         ConsistencyHE=as.numeric(ConsistencyHE),
+         nHE=as.numeric(nHE),
+         nGenes=as.numeric(nGenes),
+         d20C=as.numeric(d20C),
+         OGT=as.numeric(OGT))
+P16_df <- P16_df %>%
+  mutate(CUBHE=as.numeric(CUBHE),
+         dCUB=as.numeric(dCUB),
+         CPB=as.numeric(CPB),
+         ConsistencyHE=as.numeric(ConsistencyHE),
+         nHE=as.numeric(nHE),
+         nGenes=as.numeric(nGenes),
+         d20C=as.numeric(d20C),
+         OGT=as.numeric(OGT))
+
 
 # #gut-check
 # x <- boxcoxTransform(x = predict.lm(object = pred_mod, newdata = pred_df),
@@ -116,3 +145,21 @@ write.csv(I8I9_df_asv,file="asv_growth_data_I8-I9.csv")
 write.csv(GA02_df_asv,file="asv_growth_data_GA02.csv")
 write.csv(P16_df_asv,file="asv_growth_data_P16.csv")
 
+I8I9_df$transect <- "I8I9"
+GA02_df$transect <- "GA02"
+P16_df$transect <- "P16"
+
+pred_df <- rbind(I8I9_df,GA02_df,P16_df)
+save(pred_df,file="gtdb220_genome_predictions.rda")
+
+# Hits per genome --------------------------------------------------------------
+
+P16_count <- P16_df %>%
+  group_by(ASV) %>%
+  summarize(nGenomes=length(Accession))
+
+ggplot(P16_count,aes(x=nGenomes)) +
+  geom_histogram() +
+  scale_x_log10()
+
+sum(P16_count$nGenomes>1)/nrow(P16_count)
