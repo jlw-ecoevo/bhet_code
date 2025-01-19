@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "Code should be cited by referencing associated publication (https://doi.org/10.1101/2024.02.14.580411)"
+authors:
+  - family-names: Weissman
+    given-names: JL
+    orcid: https://doi.org/10.1101/2024.02.14.580411
+title: "Associated code"
+version: 1.0.5
+date-released: 2025-01-19
