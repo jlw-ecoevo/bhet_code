@@ -3,6 +3,5 @@ message: "Code should be cited by referencing associated publication"
 - family-names: "Weissman"
   given-names: "JL"
 title: "Manuscript associated code"
-license: "MIT"
 version: 1.5.0
 date-released: 2025-02-14
