@@ -1,6 +1,6 @@
 cff-version: 1.5.0
-license: ["MIT"]
-message: "Code should be cited by referencing associated publication (https://doi.org/10.1101/2024.02.14.580411)"
+license: "MIT"
+message: "Code should be cited by referencing associated publication"
 title: "Associated code"
 version: "1.5.0"
 date-released: "2025-02-14"
